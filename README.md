@@ -32,7 +32,7 @@
 >项目地址：&nbsp;&nbsp;   ***~~Removed according to regulations.~~***  
 
 >```
->wget &nbsp;&nbsp;   ***~~Removed according to regulations.~~***  
+>wget     ***~~Removed according to regulations.~~***  
 >tar zxvf shadowvpn-0.1.6.tar.gz  
 >./configure --enable-static --sysconfdir=/etc  
 >make && sudo make install  
@@ -80,3 +80,5 @@
 * [Cisco IPsec VPN](https://gist.github.com/OkamiSupport/4892f251e837ee708131)
 * *~~IKEv2~~* (Not support)
 
+##路由部分
+###实现拨入国内pop点，网络流量全部从公司服务器出来的效果：
