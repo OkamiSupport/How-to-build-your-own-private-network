@@ -15,7 +15,7 @@
 *Please assume that the router in this figure is a regular server.*
 
 
-##接入部：
+##接入部分
 <br></br>
 ###用户——服务器端
 * OpenVPN [Setup And Configure OpenVPN Server On CentOS 6.5](http://www.unixmen.com/setup-openvpn-server-client-centos-6-5/)
@@ -115,3 +115,65 @@ iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o [default route interface] -j MASQ
 ```
 写完后保存即可。
 
+##高级路由部分（使用BGP协议动态控制流量走向）
+虽然说员工到公司的网络连通性问题解决了，但是某天老总脑子抽了，突然想玩CSGO，结果发现连接东南亚CSGO服务器卡的不行，  
+老板大为光火，命令技术去解决这个操蛋的问题（技术：关我屁事，买个加速器不就行了）  
+悲催的技术被逼去做这个倒霉的事情。最后发现某机房的机子链接CSGO服务器质量非常好，而且连接公司路由器质量也不错，决定采购这家机房的服务器做流量二次跳转。  
+但购买后，发现不能把公司的流量全盘导入到这个机器中，而且，CSGO服务器的IP经常变动，写静态路由不太现实***~~（这里只是假设）~~***，而且steam上还有其他好多的东南亚服的游戏，写一大堆静态路由非常难以维护，于是在服务器上跑一个quagga启动动态路由协议，并与公司路由器对接起来。  
+
+首先，两边服务器先安装quagga
+```
+yum -y install quagga && cp /etc/quagga/bgpd.conf.sample /etc/quagga/bgpd.conf
+```
+然后，启动BGP进程和模拟思科路由的进程，并设置开机启动
+```
+service bgpd start && service zebra start && chkconfig zebra on && chkconfig bgpd on
+```
+
+BGP是有AS的概念，你需要把两台服务器划分到不同的AS中。  
+假定公司服务器的AS是100，机房服务器AS是101，  
+而且机房机器和公司路由器（服务器）用shadowvpn做好了隧道链接，且流量通信正常。  
+*~~（反正在内网路由，和公网没半毛钱关系，用公网AS也没关系嘛）~~*
+*~~（严谨的同学可以换成私有的AS来做路由）~~*  
+
+在公司路由器（服务器）上进行操作  
+
+```
+vtysh  //进入zebra的进程
+conf t  //进入思科特权模式
+no router bgp 7675  //关掉模板config自带的bgp as
+router bgp 100  //自定义自己的bgp as
+neighbor [对端VPN interface IP] remote-as 101  //和对端bgp 做对接
+neighbor [对端VPN interface IP] ebgp-multihop  //开启ebgp-multihop，防止因为ebgp数据包ttl不够导致邻居无法建立
+end //退回普通模式
+wr //保存
+```
+在机房服务器上进行操作
+```
+vtysh  //进入zebra的进程
+conf t  //进入思科特权模式
+no router bgp 7675  //关掉模板config自带的bgp as
+router bgp 101  //自定义自己的bgp as
+neighbor [对端VPN interface IP] remote-as 100  //和对端bgp 做对接
+neighbor [对端VPN interface IP] ebgp-multihop  //开启ebgp-multihop，防止因为ebgp数据包ttl不够导致邻居无法建立
+redistribute  static //重分发通过zebra(quagga)写入的静态路由
+end //退回普通模式
+wr //保存
+```
+然后看一下邻居关系
+```
+show ip bgp summary
+```
+正常情况下应该成功建立了邻居的
+```
+okami# show ip bgp summary  
+BGP router identifier 172.16.35.2, local AS number 101
+RIB entries 8, using 768 bytes of memory
+Peers 1, using 4560 bytes of memory
+
+Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+172.16.35.1     4   100     162     167        0    0    0 00:24:55        0
+
+Total number of neighbors 1
+
+```
