@@ -121,22 +121,22 @@ iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o [default route interface] -j MASQ
 悲催的技术被逼去做这个倒霉的事情。最后发现某机房的机子链接CSGO服务器质量非常好，而且连接公司路由器质量也不错，决定采购这家机房的服务器做流量二次跳转。  
 但购买后，发现不能把公司的流量全盘导入到这个机器中，而且，CSGO服务器的IP经常变动，写静态路由不太现实***~~（这里只是假设）~~***，而且steam上还有其他好多的东南亚服的游戏，写一大堆静态路由非常难以维护，于是在服务器上跑一个quagga启动动态路由协议，并与公司路由器对接起来。  
 
-首先，两边服务器先安装quagga
+**首先，两边服务器先安装quagga**
 ```
 yum -y install quagga && cp /etc/quagga/bgpd.conf.sample /etc/quagga/bgpd.conf
 ```
-然后，启动BGP进程和模拟思科路由的进程，并设置开机启动
+**然后，启动BGP进程和模拟思科路由的进程，并设置开机启动**
 ```
 service bgpd start && service zebra start && chkconfig zebra on && chkconfig bgpd on
 ```
 
 BGP是有AS的概念，你需要把两台服务器划分到不同的AS中。  
 假定公司服务器的AS是100，机房服务器AS是101，  
-而且机房机器和公司路由器（服务器）用shadowvpn做好了隧道链接，且流量通信正常。  
-*~~（反正在内网路由，和公网没半毛钱关系，用公网AS也没关系嘛）~~*
+而且机房机器和公司路由器（服务器）用shadowvpn做好了隧道链接，且流量通信正常，防火墙也做好了规则。  
+*~~（反正在内网路由，和公网没半毛钱关系，用公网AS也没关系嘛）~~*  
 *~~（严谨的同学可以换成私有的AS来做路由）~~*  
 
-在公司路由器（服务器）上进行操作  
+**在公司路由器（服务器）上进行操作**  
 
 ```
 vtysh  //进入zebra的进程
@@ -148,7 +148,7 @@ neighbor [对端VPN interface IP] ebgp-multihop  //开启ebgp-multihop，防止�
 end //退回普通模式
 wr //保存
 ```
-在机房服务器上进行操作
+**在机房服务器上进行操作**  
 ```
 vtysh  //进入zebra的进程
 conf t  //进入思科特权模式
@@ -160,11 +160,11 @@ redistribute  static //重分发通过zebra(quagga)写入的静态路由
 end //退回普通模式
 wr //保存
 ```
-然后看一下邻居关系
+**然后看一下邻居关系**  
 ```
 show ip bgp summary
 ```
-正常情况下应该成功建立了邻居的
+**正常情况下应该成功建立了邻居的**  
 ```
 okami# show ip bgp summary  
 BGP router identifier 172.16.35.2, local AS number 101
@@ -177,3 +177,53 @@ Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 Total number of neighbors 1
 
 ```
+首先，获取机房那台机器的eth0网卡的网关地址。为什么不能写interface呢？
+== 因为有的机房禁止了ProxyARP，写interface会导致出网路由得不到正确的结果，会显示"Destination Unreachable." ==  
+进入机房服务器的configure  terminal模式下，输入CSGO的路由，并分发。  
+[点击这里下载CSGO路由表](https://gist.github.com/OkamiSupport/5becd7e0fa94e2ee9dc6)  
+<br></br>
+***使用文本编辑器把后面的关键字替换成你special-server的eth0网卡的网关地址。***
+<br></br>
+**进入机房服务器的zebra进程中进行操作**
+```
+ip route [你要去的网段/子网掩码长度] [eth0网卡的网关地址]
+
+//或者这么写
+
+ip route [你要去的网段] [子网掩码] [eth0网卡的网关地址]
+
+//按照这样把csgo的路由添加进去。
+//添加完后，进入enable模式保存即可。
+
+en
+wr
+```
+这样就完成了。CSGO的流量会自动走到机房服务器，被服务器转发到csgo服务器上。
+而且只是局部路由，公司的整体网络不会被影响。
+这样做也方便维护，只要在机房的服务器上写命令就可以维护整个大网络的路由表。
+（拓展性更强的意味~）
+
+##做完后的结果
+
+**邻居状态**
+![](http://i.imgur.com/3zDTdYD.png)
+可见邻居收到了468条Prefix
+<br></br>
+**部分路由表**
+![](http://i.imgur.com/nW1pjlM.png)
+
+Success!
+
+###附部分BGP常用命令
+```
+show ip bgp  //查看所有bgp前缀
+show ip bgp summary  //查看bgp邻居摘要信息
+show ip bgp neighbors  //查看bgp邻居详细信息
+show ip bgp neighbor [邻居IP] advertised-routes  //查看本机给邻居发送了哪些路由前缀
+clear ip bgp * soft  //软清BGP进程（不撤销邻居）
+clear ip bgp *  //硬清BGP进程（断开邻居并重连，suppress-map需要硬清）
+```
+
+##文档授权协议
+本文档采用CC-BY-NC-SA 4.0 协议授权，任何人不得使用本文档中内容进行商业活动  
+Published under CC-BY-NC-SA 4.0.  You may not use the material for commercial purposes.
