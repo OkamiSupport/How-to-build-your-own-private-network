@@ -78,7 +78,7 @@
 * [PPTP](http://docs.toughradius.net/toughradius/pptp.html)
 * [OpenVPN（只需要看Radius对接部分）](http://blog.csdn.net/xiaoxinghehe/article/details/8253100)
 * [Cisco IPsec VPN](https://gist.github.com/OkamiSupport/4892f251e837ee708131)
-* *~~IKEv2~~* (Not support)
+* *~~IKEv2~~* (Not support)  
 ToughRadius是个很强大的东西，控制账号接入极其的方便。
 
 ##路由部分  
@@ -117,7 +117,7 @@ iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o [default route interface] -j MASQ
 
 ##高级路由部分（使用BGP协议动态控制流量走向）
 虽然说员工到公司的网络连通性问题解决了，但是某天老总脑子抽了，突然想玩CSGO，结果发现连接东南亚CSGO服务器卡的不行，  
-老板大为光火，命令技术去解决这个操蛋的问题（技术：关我屁事，买个加速器不就行了）  
+老板大为光火，命令技术去解决这个操蛋的问题。（技术：关我屁事，买个加速器不就行了）  
 悲催的技术被逼去做这个倒霉的事情。最后发现某机房的机子链接CSGO服务器质量非常好，而且连接公司路由器质量也不错，决定采购这家机房的服务器做流量二次跳转。  
 但购买后，发现不能把公司的流量全盘导入到这个机器中，而且，CSGO服务器的IP经常变动，写静态路由不太现实***~~（这里只是假设）~~***，而且steam上还有其他好多的东南亚服的游戏，写一大堆静态路由非常难以维护，于是在服务器上跑一个quagga启动动态路由协议，并与公司路由器对接起来。  
 
