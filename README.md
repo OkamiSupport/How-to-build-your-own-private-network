@@ -7,9 +7,51 @@
 
 这个repo讲解关于Linux IP Route的用法和用Quagga来实现路由控制，以及一些VPN协议和Radius对接的方法。
 
+拓扑图如下：
+![](http://i.imgur.com/k9h5Egw.png)  
+图中的Host是指接入用户，pop是接入点，company router是公司核心交换服务器。  
+路由默认走ISP1，特殊路由通过特定的server走ISP2。
+<br></br>
+*Please assume that the router in this figure is a regular server.*
+
+
 ##VPN接入的方法：
 ###用户——服务器端
 * OpenVPN [Setup And Configure OpenVPN Server On CentOS 6.5](http://www.unixmen.com/setup-openvpn-server-client-centos-6-5/)
 * Cisco IPsec VPN /IKEv2 VPN [使用Strongswan搭建IPSEC VPN](https://hjc.im/shi-yong-strongswanda-jian-ipsecikev2-vpn/)
 * PPTP [How To Setup Your Own VPN With PPTP](https://www.digitalocean.com/community/tutorials/how-to-setup-your-own-vpn-with-pptp)
-* L2TP [](
+* L2TP [IPSEC L2TP VPN on CentOS 6](https://raymii.org/s/tutorials/IPSEC_L2TP_vpn_on_CentOS_-_Red_Hat_Enterprise_Linux_or_Scientific_-_Linux_6.html)
+
+常用的VPN教程已给出，本文不再做赘述。  
+
+###服务器到服务器端
+[VPN Traffic Redirect](https://github.com/OkamiSupport/VPN-traffic-redirect-to-another-vpn-tunnel)
+
+
+项目地址： *Removed according to regulations.*  
+
+wget *Removed according to regulations.*  
+tar zxvf shadowvpn-0.1.6.tar.gz  
+./configure --enable-static --sysconfdir=/etc  
+make && sudo make install  
+
+记得打开ShadowVPN用的端口，不然隧道起不来。  
+
+记得清除掉ShadowVPN client_up.sh中的一段命令：  
+ 
+echo changing default route  
+if [ pppoe-wan = "$old_gw_intf" ]; then  
+route add $server $old_gw_intf  
+else  
+route add $server gw $old_gw_ip  
+fi  
+route del default  
+route add default gw 10.7.0.1  
+echo default route changed to 10.7.0.1  
+
+不然ShadowVPN up后，你所有的流量都从ShadowVPN隧道走了。  
+
+测试隧道通信是否成功：  
+sudo route add -host 8.8.8.8 dev tunX （tunX是你ShadowVPN的interface）  
+然后nslookup twitter.com 8.8.8.8  
+如果返回的地址是无污染的IP，说明隧道已经UP了。  
