@@ -205,15 +205,15 @@ wr
 
 ##做完后的结果
 
-**邻居状态**
-![](http://i.imgur.com/3zDTdYD.png)
-可见邻居收到了468条Prefix
+**邻居状态**  
+![](http://i.imgur.com/3zDTdYD.png)  
+可见邻居收到了468条Prefix  
 <br></br>
-**部分路由表**
-![](http://i.imgur.com/nW1pjlM.png)
-
+**部分路由表**  
+![](http://i.imgur.com/nW1pjlM.png)  
+<br></br>
 Success!
-
+<br></br>
 ###附部分BGP常用命令
 ```
 show ip bgp  //查看所有bgp前缀
@@ -226,4 +226,5 @@ clear ip bgp *  //硬清BGP进程（断开邻居并重连，suppress-map需要�
 
 ##文档授权协议
 本文档采用CC-BY-NC-SA 4.0 协议授权，任何人不得使用本文档中内容进行商业活动  
+<br></br>
 Published under CC-BY-NC-SA 4.0.  You may not use the material for commercial purposes.
