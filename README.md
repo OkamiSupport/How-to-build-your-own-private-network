@@ -23,35 +23,44 @@
 * L2TP [IPSEC L2TP VPN on CentOS 6](https://raymii.org/s/tutorials/IPSEC_L2TP_vpn_on_CentOS_-_Red_Hat_Enterprise_Linux_or_Scientific_-_Linux_6.html)
 
 常用的VPN教程已给出，本文不再做赘述。  
+<br></br>
 
 ###服务器到服务器端
 [VPN Traffic Redirect](https://github.com/OkamiSupport/VPN-traffic-redirect-to-another-vpn-tunnel)
 
+>项目地址：&nbsp;&nbsp;   ***~~Removed according to regulations.~~***  
 
-项目地址： *Removed according to regulations.*  
+>```
+>wget &nbsp;&nbsp;   ***~~Removed according to regulations.~~***  
+>tar zxvf shadowvpn-0.1.6.tar.gz  
+>./configure --enable-static --sysconfdir=/etc  
+>make && sudo make install  
+>```
+>
+>记得打开ShadowVPN用的端口，不然隧道起不来。  
+>
+>记得清除掉ShadowVPN client_up.sh中的一段命令：  
+>```
+>echo changing default route  
+>if [ pppoe-wan = "$old_gw_intf" ]; then  
+>route add $server $old_gw_intf  
+>else  
+>route add $server gw $old_gw_ip  
+>fi  
+>route del default  
+>route add default gw 10.7.0.1  
+>echo default route changed to 10.7.0.1  
+>```
+>不然ShadowVPN up后，你所有的流量都从ShadowVPN隧道走了。  
+>
+>测试隧道通信是否成功：  
+>```
+>sudo route add -host 8.8.8.8 dev tunX （tunX是你ShadowVPN的interface）  
+>```
+>然后
+>```
+>nslookup twitter.com 8.8.8.8  
+>```
+>如果返回的地址是无污染的IP，说明隧道已经UP了。  
 
-wget *Removed according to regulations.*  
-tar zxvf shadowvpn-0.1.6.tar.gz  
-./configure --enable-static --sysconfdir=/etc  
-make && sudo make install  
 
-记得打开ShadowVPN用的端口，不然隧道起不来。  
-
-记得清除掉ShadowVPN client_up.sh中的一段命令：  
- 
-echo changing default route  
-if [ pppoe-wan = "$old_gw_intf" ]; then  
-route add $server $old_gw_intf  
-else  
-route add $server gw $old_gw_ip  
-fi  
-route del default  
-route add default gw 10.7.0.1  
-echo default route changed to 10.7.0.1  
-
-不然ShadowVPN up后，你所有的流量都从ShadowVPN隧道走了。  
-
-测试隧道通信是否成功：  
-sudo route add -host 8.8.8.8 dev tunX （tunX是你ShadowVPN的interface）  
-然后nslookup twitter.com 8.8.8.8  
-如果返回的地址是无污染的IP，说明隧道已经UP了。  
