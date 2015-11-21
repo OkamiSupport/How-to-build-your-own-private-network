@@ -1,4 +1,4 @@
-# How-to-setup-your-private-network
+# How-to-build-your-own-private-network
 一个完整的虚拟网络是由以下几部分组成的：
 * 接入部分（OpenVPN，PPTP/L2TP，Cisco IPsec，IKEv2等VPN协议）
 * 访问控制部分（常用Radius控制，toughradius是个不错的选择）
