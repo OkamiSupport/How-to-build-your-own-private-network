@@ -15,7 +15,8 @@
 *Please assume that the router in this figure is a regular server.*
 
 
-##VPN接入的方法：
+##VPN接入：
+<br></br>
 ###用户——服务器端
 * OpenVPN [Setup And Configure OpenVPN Server On CentOS 6.5](http://www.unixmen.com/setup-openvpn-server-client-centos-6-5/)
 * Cisco IPsec VPN /IKEv2 VPN [使用Strongswan搭建IPSEC VPN](https://hjc.im/shi-yong-strongswanda-jian-ipsecikev2-vpn/)
@@ -52,6 +53,10 @@
 >echo default route changed to 10.7.0.1  
 >```
 >不然ShadowVPN up后，你所有的流量都从ShadowVPN隧道走了。  
+>修改完后，执行
+>```
+>shadowvpn -c /etc/shadowvpn/client.conf -s start
+>```
 >
 >测试隧道通信是否成功：  
 >```
@@ -62,5 +67,16 @@
 >nslookup twitter.com 8.8.8.8  
 >```
 >如果返回的地址是无污染的IP，说明隧道已经UP了。  
+<br></br>
 
+##访问控制（使用Toughradius）：
+* [Toughradius项目地址](https://github.com/talkincode/ToughRADIUS)
+* [Toughradius安装文档](http://docs.toughradius.net/index.html)
+
+###VPN和ToughRadius之间的对接：
+***（其实就是和普通Radius对接差不多，记得在BAS管理那一栏添加服务器网卡IP，DOCKER的和eth0都要添加）***
+* [PPTP](http://docs.toughradius.net/toughradius/pptp.html)
+* [OpenVPN（只需要看Radius对接部分）](http://blog.csdn.net/xiaoxinghehe/article/details/8253100)
+* [Cisco IPsec VPN](https://gist.github.com/OkamiSupport/4892f251e837ee708131)
+* *~~IKEv2~~* (Not support)
 
