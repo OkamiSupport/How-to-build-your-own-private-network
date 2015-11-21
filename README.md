@@ -15,7 +15,7 @@
 *Please assume that the router in this figure is a regular server.*
 
 
-##VPN接入：
+##接入部：
 <br></br>
 ###用户——服务器端
 * OpenVPN [Setup And Configure OpenVPN Server On CentOS 6.5](http://www.unixmen.com/setup-openvpn-server-client-centos-6-5/)
@@ -69,19 +69,49 @@
 >如果返回的地址是无污染的IP，说明隧道已经UP了。  
 <br></br>
 
-##访问控制（使用Toughradius）：
+##访问控制部分（使用Toughradius）
 * [Toughradius项目地址](https://github.com/talkincode/ToughRADIUS)
 * [Toughradius安装文档](http://docs.toughradius.net/index.html)
 
 ###VPN和ToughRadius之间的对接：
-***（其实就是和普通Radius对接差不多，记得在BAS管理那一栏添加服务器网卡IP，DOCKER的和eth0都要添加）***
+*（其实就是和普通Radius对接差不多，记得在BAS管理那一栏添加服务器网卡IP，DOCKER的和eth0都要添加）*
 * [PPTP](http://docs.toughradius.net/toughradius/pptp.html)
 * [OpenVPN（只需要看Radius对接部分）](http://blog.csdn.net/xiaoxinghehe/article/details/8253100)
 * [Cisco IPsec VPN](https://gist.github.com/OkamiSupport/4892f251e837ee708131)
 * *~~IKEv2~~* (Not support)
+ToughRadius是个很强大的东西，控制账号接入极其的方便。
 
 ##路由部分  
 **由于员工所在的ISP连接公司服务器非常卡，所以公司希望能在员工所在的ISP部署多线服务器来实现加速访问。**  
 **这一环节讲解如何实现员工拨入就近pop点，网络流量被无条件转发到公司服务器上。**  
-<br></br>
 ** 假设你的服务器之间的ShadowVPN已经建立好且流量通信正常 **  
+<br></br>
+首先需要在pop点上创建一张私有路由表
+```
+echo "200 vpnredirect" >> /etc/iproute2/rt_tables
+```
+规定哪些VPN网段使用这张路由表
+```
+ip rule add from [your vpn subnet] table vpnredirect
+```
+给这张路由表添加默认路由（不然不走数据）
+```
+ip route add default dev [your shadowvpn interface]
+```
+最后，刷新缓存
+```
+ip route flush table vpnredirect cache
+```
+这样，接入pop的VPN流量就被重定向到公司服务器了。
+
+##防火墙部分
+一般来说，当shadowvpn起来后，脚本会自动为你添加相应的iptables规则，所以不用关心iptables规则。  
+但如果你用的是其他的VPN协议做的site to site，则需要手动添加一些iptables规则，不多，也就几条。  
+```
+//国内pop点
+iptables -t nat -A POSTROUTING -s [remote VPN subnet] -o [site to site tunnel interface] -j MASQUERADE
+//国外pop点
+iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o [default route interface] -j MASQUERADE
+```
+写完后保存即可。
+
