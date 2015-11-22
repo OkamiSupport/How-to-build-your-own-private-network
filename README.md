@@ -78,7 +78,7 @@
 * [PPTP](http://docs.toughradius.net/toughradius/pptp.html)
 * [OpenVPN（只需要看Radius对接部分）](http://blog.csdn.net/xiaoxinghehe/article/details/8253100)
 * [Cisco IPsec VPN](https://gist.github.com/OkamiSupport/4892f251e837ee708131)
-* *~~IKEv2~~* (Not support)  
+* *~~IKEv2~~* (Not supported)  
 ToughRadius是个很强大的东西，控制账号接入极其的方便。
 
 ##路由部分  
@@ -225,6 +225,7 @@ clear ip bgp *  //硬清BGP进程（断开邻居并重连，suppress-map需要�
 ```
 
 ##文档授权协议
-本文档采用CC-BY-NC-SA 4.0 协议授权，任何人不得使用本文档中内容进行商业活动  
+![](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)
+本作品采用[知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议](https://creativecommons.org/licenses/by-nc-sa/4.0/)进行许可。任何人不得使用本文档中内容进行商业活动.
 <br></br>
-Published under CC-BY-NC-SA 4.0.  You may not use the material for commercial purposes.
+This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).  You may not use the material for commercial purposes.
