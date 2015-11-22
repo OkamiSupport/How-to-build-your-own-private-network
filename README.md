@@ -129,7 +129,12 @@ yum -y install quagga && cp /etc/quagga/bgpd.conf.sample /etc/quagga/bgpd.conf
 ```
 service bgpd start && service zebra start && chkconfig zebra on && chkconfig bgpd on
 ```
-
+**最后，在任意一台机子上放行BGP的端口，只需要放行一端即可**
+```
+iptables -t filter -I INPUT -p tcp -m tcp --dport 179 -j ACCEPT
+```
+因为BGP起来的时候会发起两条连接（两边各一条），只要其中一条连接成功，BGP邻居就能UP。  
+<br></br>
 BGP是有AS的概念，你需要把两台服务器划分到不同的AS中。  
 假定公司服务器的AS是100，机房服务器AS是101，  
 而且机房机器和公司路由器（服务器）用shadowvpn做好了隧道链接，且流量通信正常，防火墙也做好了规则。  
@@ -177,7 +182,7 @@ Neighbor        V    AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
 Total number of neighbors 1
 
 ```
-首先，获取机房那台机器的eth0网卡的网关地址。为什么不能写interface呢？
+首先，获取机房那台机器的eth0网卡的网关地址。为什么不能写interface呢？  
 == 因为有的机房禁止了ProxyARP，写interface会导致出网路由得不到正确的结果，会显示"Destination Unreachable." ==  
 进入机房服务器的configure  terminal模式下，输入CSGO的路由，并分发。  
 [点击这里下载CSGO路由表](https://gist.github.com/OkamiSupport/5becd7e0fa94e2ee9dc6)  
